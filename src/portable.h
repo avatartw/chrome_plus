@@ -100,23 +100,23 @@ std::wstring GetCommand(LPWSTR param)
             // args.push_back(L"--force-local-ntp");
             // args.push_back(L"--disable-background-networking");
 
-            args.push_back(L"--disable-features=RendererCodeIntegrity,FlashDeprecationWarning");
+            args.push_back(L"--disable-features=RendererCodeIntegrity,FlashDeprecationWarning --enable-features=PlatformHEVCDecoderSupport");
 
             //if (IsNeedPortable())
-            {
-                auto diskcache = GetDiskCacheDir();
+            //{
+            //    auto diskcache = GetDiskCacheDir();
 
-                wchar_t temp[MAX_PATH];
-                wsprintf(temp, L"--disk-cache-dir=%s", diskcache.c_str());
-                args.push_back(temp);
-            }
-            {
-                auto userdata = GetUserDataDir();
+            //    wchar_t temp[MAX_PATH];
+            //    wsprintf(temp, L"--disk-cache-dir=%s", diskcache.c_str());
+            //    args.push_back(temp);
+            //}
+            //{
+            //    auto userdata = GetUserDataDir();
 
-                wchar_t temp[MAX_PATH];
-                wsprintf(temp, L"--user-data-dir=%s", userdata.c_str());
-                args.push_back(temp);
-            }
+            //    wchar_t temp[MAX_PATH];
+            //    wsprintf(temp, L"--user-data-dir=%s", userdata.c_str());
+            //    args.push_back(temp);
+            //}
         }
     }
     LocalFree(argv);
