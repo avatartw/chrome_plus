@@ -111,13 +111,13 @@ std::wstring GetCommand(LPWSTR param)
             //    wsprintf(temp, L"--disk-cache-dir=%s", diskcache.c_str());
             //    args.push_back(temp);
             //}
-            //{
-            //    auto userdata = GetUserDataDir();
+            {
+                auto userdata = GetUserDataDir();
 
-            //    wchar_t temp[MAX_PATH];
-            //    wsprintf(temp, L"--user-data-dir=%s", userdata.c_str());
-            //    args.push_back(temp);
-            //}
+                wchar_t temp[MAX_PATH];
+                wsprintf(temp, L"--user-data-dir=%s", userdata.c_str());
+                args.push_back(temp);
+            }
         }
     }
     LocalFree(argv);
