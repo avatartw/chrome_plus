@@ -102,6 +102,8 @@ std::wstring GetCommand(LPWSTR param)
 
             args.push_back(L"--disable-features=RendererCodeIntegrity,FlashDeprecationWarning");
             args.push_back(L"--enable-features=PlatformHEVCDecoderSupport");
+            args.push_back(L"--disable-machine-id");
+            args.push_back(L"--disable-encryption-win");
 
             // if (IsNeedPortable())
             //{
