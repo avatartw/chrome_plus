@@ -22,7 +22,7 @@ jobs:
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@main
       with:
         submodules: 'true'
 
@@ -40,7 +40,7 @@ jobs:
       run: xmake
 
     - name: upload
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@main
       with:
         name: ${{ matrix.name }}
         path: build/release
