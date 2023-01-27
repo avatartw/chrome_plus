@@ -100,7 +100,8 @@ std::wstring GetCommand(LPWSTR param)
             // args.push_back(L"--force-local-ntp");
             // args.push_back(L"--disable-background-networking");
 
-            args.push_back(L"--disable-features=RendererCodeIntegrity,FlashDeprecationWarning");
+            args.push_back(L"--disable-crash-reporter --disable-breakpad --no-report-upload --disable-logging --realtime-reporting-url=0.0.0.0 --reporting-connector-url=0.0.0.0 --blink-settings=\"dnsPrefetchingEnabled=false\"");
+            args.push_back(L"--disable-features=RendererCodeIntegrity,FlashDeprecationWarning,CrashReporting,CrostiniAdditionalEnterpriseReporting,DocumentReporting,Reporting");
             args.push_back(L"--enable-features=PlatformHEVCDecoderSupport,EnableTabMuting");
             // args.push_back(L"--disable-machine-id");
             // args.push_back(L"--disable-encryption-win");
