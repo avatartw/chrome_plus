@@ -104,7 +104,7 @@ std::wstring GetCommand(LPWSTR param)
             args.push_back(L"--realtime-reporting-url=0.0.0.0");
             args.push_back(L"--reporting-connector-url=0.0.0.0");
             args.push_back(L"--disable-features=RendererCodeIntegrity,FlashDeprecationWarning,CrashReporting,CrostiniAdditionalEnterpriseReporting,DocumentReporting,Reporting");
-            args.push_back(L"--enable-features=PlatformHEVCDecoderSupport,EnableTabMuting");
+            args.push_back(L"--enable-features=IntelVpSuperResolution,PlatformHEVCDecoderSupport,EnableTabMuting");
             // args.push_back(L"--disable-machine-id");
             // args.push_back(L"--disable-encryption-win");
 
