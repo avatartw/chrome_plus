@@ -216,6 +216,8 @@ std::wstring GetCommand(LPWSTR param)
             // if (IsNeedPortable())
             {
                 auto diskcache = GetDiskCacheDir();
+                auto userdata = GetUserDataDir();
+
                 if (diskcache == userdata)
 		{}
                 else
