@@ -141,7 +141,7 @@ typedef BOOL(WINAPI *pUpdateProcThreadAttribute)(
     PVOID lpPreviousValue,
     PSIZE_T lpReturnSize);
 
-pUpdateProcThreadAttribute RawUpdateProcThreadAttribute = nullptr;
+pUpdateProcThreadAttribute RawUpdateProcThreadAttribute = NULL;
 
 BOOL WINAPI MyUpdateProcThreadAttribute(
     __inout LPPROC_THREAD_ATTRIBUTE_LIST lpAttributeList,
@@ -167,6 +167,7 @@ void MakeGreen()
     {
         PBYTE GetComputerNameW = (PBYTE)GetProcAddress(kernel32, "GetComputerNameW");
         PBYTE GetVolumeInformationW = (PBYTE)GetProcAddress(kernel32, "GetVolumeInformationW");
+        PBYTE UpdateProcThreadAttribute = (PBYTE)GetProcAddress(kernel32, "UpdateProcThreadAttribute");
 
         MH_STATUS status = MH_CreateHook(GetComputerNameW, FakeGetComputerName, NULL);
         if (status == MH_OK)
@@ -186,6 +187,16 @@ void MakeGreen()
         {
             DebugLog(L"MH_CreateHook GetVolumeInformationW failed:%d", status);
         }
+        status = MH_CreateHook(UpdateProcThreadAttribute, MyUpdateProcThreadAttribute, (LPVOID *)&RawUpdateProcThreadAttribute);
+        if (status == MH_OK)
+        {
+           MH_EnableHook(UpdateProcThreadAttribute);
+        }
+        else
+        {
+            DebugLog(L"MH_CreateHook UpdateProcThreadAttribute failed:%d", status);
+        }
+
     }
 
     // components/os_crypt/os_crypt_win.cc
@@ -261,17 +272,5 @@ void MakeGreen()
         {
             DebugLog(L"MH_CreateHook NetUserGetInfo failed:%d", status);
         }
-    }
-
-    LPVOID ppUpdateProcThreadAttribute = nullptr;
-    MH_STATUS status = MH_CreateHookApiEx(L"kernel32", "UpdateProcThreadAttribute",
-        &MyUpdateProcThreadAttribute, (LPVOID *)&RawUpdateProcThreadAttribute, &ppUpdateProcThreadAttribute);
-    if (status == MH_OK)
-    {
-        MH_EnableHook(ppUpdateProcThreadAttribute);
-    }
-    else
-    {
-        DebugLog(L"MH_CreateHookApiEx UpdateProcThreadAttribute failed: %d", status);
     }
 }
