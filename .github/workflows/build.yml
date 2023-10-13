@@ -53,7 +53,7 @@ jobs:
       run: |
         New-Item -ItemType Directory -Path C:\Chrome_Plus_Release -Force | Out-Null
         cd build\release\
-        7z a -mx9 "C:\Chrome_Plus_Release\chrome_plus_${{ matrix.arch }}.7z" version.dll
+        7z a -mx9 "C:\Chrome_Plus_Release\chrome_plus_${{ matrix.arch }}.7z" version.dll ..\..\src\chrome++.ini
         echo "$((Get-FileHash -Algorithm SHA256 C:\Chrome_Plus_Release\chrome_plus_${{ matrix.arch }}.7z).Hash)" | Out-File "C:\Chrome_Plus_Release\chrome_plus_${{ matrix.arch }}.7z.sha256" -Encoding ASCII
     - name: Get tag name
       uses: olegtarasov/get-tag@master

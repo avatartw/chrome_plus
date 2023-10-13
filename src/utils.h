@@ -43,7 +43,7 @@ void DebugLog(const wchar_t *format, ...)
     OutputDebugStringW(str.c_str());
 }
 
-// 搜索内存
+// 搜尋內存
 uint8_t *memmem(uint8_t *src, int n, const uint8_t *sub, int m)
 {
     return (uint8_t *)FastSearch(src, n, sub, m);
@@ -89,7 +89,7 @@ uint8_t *SearchModuleRaw2(HMODULE module, const uint8_t *sub, int m)
 #include <Shlwapi.h>
 #pragma comment(lib, "Shlwapi.lib")
 
-// 获得程序所在文件夹
+// 獲得程序所在資料夾
 std::wstring GetAppDir()
 {
     wchar_t path[MAX_PATH];
@@ -133,7 +133,7 @@ void ExecuteCommand(int id, HWND hwnd = 0)
     ::SendMessageTimeoutW(hwnd, WM_SYSCOMMAND, id, 0, 0, 1000, 0);
 }
 
-// 发送按键
+// 發送按鍵
 template <typename... T>
 void SendKey(T... keys)
 {
@@ -147,24 +147,24 @@ void SendKey(T... keys)
         input.ki.wVk = (WORD)key;
         input.ki.dwExtraInfo = MAGIC_CODE;
 
-        // 修正鼠标消息
+        // 修正滑鼠消息
         switch (input.ki.wVk)
         {
-        case VK_RBUTTON:
-            input.type = INPUT_MOUSE;
-            input.mi.dwFlags = ::GetSystemMetrics(SM_SWAPBUTTON) == TRUE ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_RIGHTDOWN;
-            input.mi.dwExtraInfo = MAGIC_CODE;
-            break;
-        case VK_LBUTTON:
-            input.type = INPUT_MOUSE;
-            input.mi.dwFlags = ::GetSystemMetrics(SM_SWAPBUTTON) == TRUE ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_LEFTDOWN;
-            input.mi.dwExtraInfo = MAGIC_CODE;
-            break;
-        case VK_MBUTTON:
-            input.type = INPUT_MOUSE;
-            input.mi.dwFlags = MOUSEEVENTF_MIDDLEDOWN;
-            input.mi.dwExtraInfo = MAGIC_CODE;
-            break;
+            case VK_RBUTTON:
+                input.type = INPUT_MOUSE;
+                input.mi.dwFlags = ::GetSystemMetrics(SM_SWAPBUTTON) == TRUE ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_RIGHTDOWN;
+                input.mi.dwExtraInfo = MAGIC_CODE;
+                break;
+            case VK_LBUTTON:
+                input.type = INPUT_MOUSE;
+                input.mi.dwFlags = ::GetSystemMetrics(SM_SWAPBUTTON) == TRUE ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_LEFTDOWN;
+                input.mi.dwExtraInfo = MAGIC_CODE;
+                break;
+            case VK_MBUTTON:
+                input.type = INPUT_MOUSE;
+                input.mi.dwFlags = MOUSEEVENTF_MIDDLEDOWN;
+                input.mi.dwExtraInfo = MAGIC_CODE;
+                break;
         }
 
         inputs.push_back(input);
@@ -178,24 +178,24 @@ void SendKey(T... keys)
         input.ki.wVk = (WORD)key;
         input.ki.dwExtraInfo = MAGIC_CODE;
 
-        // 修正鼠标消息
+        // 修正滑鼠消息
         switch (input.ki.wVk)
         {
-        case VK_RBUTTON:
-            input.type = INPUT_MOUSE;
-            input.mi.dwFlags = ::GetSystemMetrics(SM_SWAPBUTTON) == TRUE ? MOUSEEVENTF_LEFTUP : MOUSEEVENTF_RIGHTUP;
-            input.mi.dwExtraInfo = MAGIC_CODE;
-            break;
-        case VK_LBUTTON:
-            input.type = INPUT_MOUSE;
-            input.mi.dwFlags = ::GetSystemMetrics(SM_SWAPBUTTON) == TRUE ? MOUSEEVENTF_RIGHTUP : MOUSEEVENTF_LEFTUP;
-            input.mi.dwExtraInfo = MAGIC_CODE;
-            break;
-        case VK_MBUTTON:
-            input.type = INPUT_MOUSE;
-            input.mi.dwFlags = MOUSEEVENTF_MIDDLEUP;
-            input.mi.dwExtraInfo = MAGIC_CODE;
-            break;
+            case VK_RBUTTON:
+                input.type = INPUT_MOUSE;
+                input.mi.dwFlags = ::GetSystemMetrics(SM_SWAPBUTTON) == TRUE ? MOUSEEVENTF_LEFTUP : MOUSEEVENTF_RIGHTUP;
+                input.mi.dwExtraInfo = MAGIC_CODE;
+                break;
+            case VK_LBUTTON:
+                input.type = INPUT_MOUSE;
+                input.mi.dwFlags = ::GetSystemMetrics(SM_SWAPBUTTON) == TRUE ? MOUSEEVENTF_RIGHTUP : MOUSEEVENTF_LEFTUP;
+                input.mi.dwExtraInfo = MAGIC_CODE;
+                break;
+            case VK_MBUTTON:
+                input.type = INPUT_MOUSE;
+                input.mi.dwFlags = MOUSEEVENTF_MIDDLEUP;
+                input.mi.dwExtraInfo = MAGIC_CODE;
+                break;
         }
 
         inputs.push_back(input);
@@ -208,10 +208,10 @@ void SendKey(T... keys)
     ::SendInput((UINT)inputs.size(), &inputs[0], sizeof(INPUT));
 }
 
-//发送鼠标消息
+// 發送滑鼠消息
 void SendOneMouse(int mouse)
 {
-    // 交换左右键
+    // 交換左右鍵
     if (::GetSystemMetrics(SM_SWAPBUTTON) == TRUE)
     {
         if (mouse == MOUSEEVENTF_RIGHTDOWN)
@@ -241,7 +241,38 @@ bool isEndWith(const wchar_t *s, const wchar_t *sub)
     return !_memicmp(s + len1 - len2, sub, len2 * sizeof(wchar_t));
 }
 
-// 压缩HTML
+// 獲得指定路徑的絕對路徑
+std::wstring GetAbsolutePath(const std::wstring &path)
+{
+    wchar_t buffer[MAX_PATH];
+    ::GetFullPathNameW(path.c_str(), MAX_PATH, buffer, NULL);
+    return buffer;
+}
+
+// 展開環境路徑比如 %windir%
+std::wstring ExpandEnvironmentPath(const std::wstring &path)
+{
+    std::vector<wchar_t> buffer(MAX_PATH);
+    size_t ExpandedLength = ::ExpandEnvironmentStrings(path.c_str(), &buffer[0], (DWORD)buffer.size());
+    if (ExpandedLength > buffer.size())
+    {
+        buffer.resize(ExpandedLength);
+        ExpandedLength = ::ExpandEnvironmentStrings(path.c_str(), &buffer[0], (DWORD)buffer.size());
+    }
+    return std::wstring(&buffer[0], 0, ExpandedLength);
+}
+// 替換 ini 檔案中的字串（寬字符處理中文路徑）
+void ReplaceStringIni(std::wstring &subject, const std::wstring &search, const std::wstring &replace)
+{
+    size_t pos = 0;
+    while ((pos = subject.find(search, pos)) != std::wstring::npos)
+    {
+        subject.replace(pos, search.length(), replace);
+        pos += replace.length();
+    }
+}
+
+// 壓縮HTML
 std::string &ltrim(std::string &s)
 {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) { return !std::isspace(ch); }));
@@ -284,7 +315,7 @@ void compression_html(std::string &html)
     }
 }
 
-// 替换字符串
+// 替換字串
 bool ReplaceStringInPlace(std::string &subject, const std::string &search, const std::string &replace)
 {
     bool find = false;

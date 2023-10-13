@@ -65,7 +65,7 @@ void TraversalAccessible(NodePtr node, Function f)
                     NodePtr child = nullptr;
                     if (S_OK == dispatch->QueryInterface(IID_IAccessible, (void **)&child))
                     {
-                        if ((GetAccessibleState(child) & STATE_SYSTEM_INVISIBLE) == 0) // 只遍历可见节点
+                        if ((GetAccessibleState(child) & STATE_SYSTEM_INVISIBLE) == 0) // 只遍歷可見節點
                         {
                             if (f(child))
                             {
@@ -97,7 +97,7 @@ void TraversalRawAccessible(NodePtr node, Function f)
                     NodePtr child = nullptr;
                     if (S_OK == dispatch->QueryInterface(IID_IAccessible, (void **)&child))
                     {
-                        // if ((GetAccessibleState(child) & STATE_SYSTEM_INVISIBLE) == 0) // 只遍历可见节点
+                        // if ((GetAccessibleState(child) & STATE_SYSTEM_INVISIBLE) == 0) // 只遍歷可見節點
                         {
                             if (f(child))
                             {
@@ -199,7 +199,7 @@ NodePtr FindChildElement(NodePtr parent, long role, int skipcount = 0)
     {
         int i = 0;
         TraversalAccessible(parent, [&element, &role, &i, &skipcount](NodePtr child) {
-            // DebugLog(L"当前 %d,%d", i, skipcount);
+            // DebugLog(L"當前 %d,%d", i, skipcount);
             if (GetAccessibleRole(child) == role)
             {
                 if (i == skipcount)
@@ -236,7 +236,7 @@ void GetAccessibleSize(NodePtr node, Function f)
     }
 }
 
-// 鼠标是否在某个标签上
+// 滑鼠是否在某個標籤上
 bool IsOnOneTab(NodePtr top, POINT pt)
 {
     bool flag = false;
@@ -271,42 +271,90 @@ bool IsOnOneTab(NodePtr top, POINT pt)
     return flag;
 }
 
-// 是否只有一个标签
+// 是否保留最後一個標籤，是則返回 IsOnlyOneTab 為 True，否則返回 False
+bool IsKeepLastTabFun()
+{
+        std::wstring IniPath = GetAppDir() + L"\\chrome++.ini";
+        if (::GetPrivateProfileIntW(L"Tabs", L"keep_last_tab", 1, IniPath.c_str()) == 0)
+        {
+            return false;
+        }
+
+        return true;
+}
+
+bool IsKeepLastTab = IsKeepLastTabFun();
+
+// 是否只有一個標籤
 bool IsOnlyOneTab(NodePtr top)
 {
-    NodePtr PageTabList = FindPageTabList(top);
-    if (PageTabList)
-    {
-        // DebugLog(L"IsOnlyOneTab");
-        long tab_count = 0;
-
-        NodePtr PageTab = FindPageTab(PageTabList);
-        if (PageTab)
-        {
-            NodePtr PageTabPane = GetParentElement(PageTab);
-            if (PageTabPane)
-            {
-                TraversalAccessible(PageTabPane, [&tab_count](NodePtr child) {
-                    // if (GetAccessibleRole(child) == ROLE_SYSTEM_PAGETAB && GetChildCount(child))
-                    if (GetAccessibleRole(child) == ROLE_SYSTEM_PAGETAB)
-                    {
-                        tab_count++;
-                    }
-                    return false;
-                });
-            }
-        }
-        // DebugLog(L"closing %d,%d", closing, tab_count);
-        return tab_count <= 1;
+    if (!IsKeepLastTab) {
+        return false;
     }
     else
     {
-        // if (top) DebugLog(L"IsOnlyOneTab failed");
+        NodePtr PageTabList = FindPageTabList(top);
+        if (PageTabList)
+        {
+            // DebugLog(L"IsOnlyOneTab");
+            long tab_count = 0;
+
+            NodePtr PageTab = FindPageTab(PageTabList);
+            if (PageTab)
+            {
+                NodePtr PageTabPane = GetParentElement(PageTab);
+                if (PageTabPane)
+                {
+                    TraversalAccessible(PageTabPane, [&tab_count](NodePtr child) {
+                        // if (GetAccessibleRole(child) == ROLE_SYSTEM_PAGETAB && GetChildCount(child))
+                        if (GetAccessibleRole(child) == ROLE_SYSTEM_PAGETAB)
+                        {
+                            tab_count++;
+                        }
+                        return false;
+                    });
+                }
+            }
+            // DebugLog(L"closing %d,%d", closing, tab_count);
+            return tab_count <= 1;
+        }
+        else
+        {
+            // if (top) DebugLog(L"IsOnlyOneTab failed");
+        }
+        return false;
     }
-    return false;
 }
 
-// 鼠标是否在标签栏上
+// 是否開啟滑鼠停留在標籤欄時滾輪切換標籤
+bool IsWheelTabFun()
+{
+    std::wstring IniPath = GetAppDir() + L"\\chrome++.ini";
+    if (::GetPrivateProfileIntW(L"Tabs", L"wheel_tab", 1, IniPath.c_str()) == 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool IsWheelTab = IsWheelTabFun();
+
+// 是否開啟在任何位置按住右鍵時滾輪切換標籤
+bool IsWheelTabWhenPressRButtonFun()
+{
+    std::wstring IniPath = GetAppDir() + L"\\chrome++.ini";
+    if (::GetPrivateProfileIntW(L"Tabs", L"wheel_tab_when_press_rbutton", 1, IniPath.c_str()) == 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool IsWheelTabWhenPressRButton = IsWheelTabWhenPressRButtonFun();
+
+// 滑鼠是否在標籤欄上
 bool IsOnTheTab(NodePtr top, POINT pt)
 {
     bool flag = false;
@@ -326,6 +374,20 @@ bool IsOnTheTab(NodePtr top, POINT pt)
     }
     return flag;
 }
+
+// 是否執行雙擊關閉
+bool IsDblClkFun()
+{
+    std::wstring IniPath = GetAppDir() + L"\\chrome++.ini";
+    if (::GetPrivateProfileIntW(L"Tabs", L"double_click_close", 1, IniPath.c_str()) == 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool IsDblClk = IsDblClkFun();
 
 LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
@@ -371,64 +433,75 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
         //     return 1;
         // }
 
-        if (wParam == WM_MOUSEWHEEL)
+        if (wParam == WM_MOUSEWHEEL) {
+            HWND hwnd = WindowFromPoint(pmouse->pt);
+            NodePtr TopContainerView = GetTopContainerView(hwnd);
+
+            PMOUSEHOOKSTRUCTEX pwheel = (PMOUSEHOOKSTRUCTEX) lParam;
+            int zDelta = GET_WHEEL_DELTA_WPARAM(pwheel->mouseData);
+
+            // 是否啟用滑鼠停留在標籤欄時滾輪切換標籤
+            if (IsWheelTab && IsOnTheTab(TopContainerView, pmouse->pt)) {
+                    hwnd = GetTopWnd(hwnd);
+                    if (zDelta > 0) {
+                        ExecuteCommand(IDC_SELECT_PREVIOUS_TAB, hwnd);
+                    } else {
+                        ExecuteCommand(IDC_SELECT_NEXT_TAB, hwnd);
+                    }
+
+                    wheel_tab_ing = true;
+                    if (TopContainerView) {
+                    }
+                    // DebugLog(L"WM_MOUSEWHEEL");
+                    return 1;
+                }
+ 
+            // 是否啟用在任何位置按住右鍵時滾輪切換標籤
+            if (IsWheelTabWhenPressRButton && IsPressed(VK_RBUTTON)) {
+                    hwnd = GetTopWnd(hwnd);
+                    if (zDelta > 0) {
+                        ExecuteCommand(IDC_SELECT_PREVIOUS_TAB, hwnd);
+                    } else {
+                        ExecuteCommand(IDC_SELECT_NEXT_TAB, hwnd);
+                    }
+
+                    wheel_tab_ing = true;
+                    if (TopContainerView) {
+                    }
+                    // DebugLog(L"WM_MOUSEWHEEL");
+                    return 1;
+                }
+        }
+
+        if (IsDblClk && wParam == WM_LBUTTONDBLCLK)
         {
             HWND hwnd = WindowFromPoint(pmouse->pt);
             NodePtr TopContainerView = GetTopContainerView(hwnd);
 
-            PMOUSEHOOKSTRUCTEX pwheel = (PMOUSEHOOKSTRUCTEX)lParam;
-            int zDelta = GET_WHEEL_DELTA_WPARAM(pwheel->mouseData);
+            bool isOnOneTab = IsOnOneTab(TopContainerView, pmouse->pt);
+            bool isOnlyOneTab = IsOnlyOneTab(TopContainerView);
 
-            if (IsOnTheTab(TopContainerView, pmouse->pt) || IsPressed(VK_RBUTTON))
+            if (TopContainerView)
             {
-                hwnd = GetTopWnd(hwnd);
-                if (zDelta > 0)
+            }
+
+            // 雙擊關閉
+            if (isOnOneTab)
+            {
+                if (isOnlyOneTab)
                 {
-                    ExecuteCommand(IDC_SELECT_PREVIOUS_TAB, hwnd);
+                    // DebugLog(L"keep_tab");
+                    // ExecuteCommand(IDC_NEW_TAB, hwnd);
+                    ExecuteCommand(IDC_NEW_TAB);
+                    ExecuteCommand(IDC_SELECT_PREVIOUS_TAB);
+                    ExecuteCommand(IDC_CLOSE_TAB);
                 }
                 else
                 {
-                    ExecuteCommand(IDC_SELECT_NEXT_TAB, hwnd);
+                    ExecuteCommand(IDC_CLOSE_TAB);
                 }
-
-                wheel_tab_ing = true;
-                if (TopContainerView)
-                {
-                }
-                // DebugLog(L"WM_MOUSEWHEEL");
-                return 1;
             }
         }
-
-        //if (wParam == WM_LBUTTONDBLCLK)
-        //{
-        //    HWND hwnd = WindowFromPoint(pmouse->pt);
-        //    NodePtr TopContainerView = GetTopContainerView(hwnd);
-
-        //    bool isOnOneTab = IsOnOneTab(TopContainerView, pmouse->pt);
-        //    bool isOnlyOneTab = IsOnlyOneTab(TopContainerView);
-
-        //    if (TopContainerView)
-        //    {
-        //    }
-
-            // 双击关闭
-        //    if (isOnOneTab)
-        //    {
-        //        if (isOnlyOneTab)
-        //        {
-                    // DebugLog(L"keep_tab");
-                    // ExecuteCommand(IDC_NEW_TAB, hwnd);
-        //            ExecuteCommand(IDC_NEW_TAB);
-        //            ExecuteCommand(IDC_SELECT_PREVIOUS_TAB);
-        //            ExecuteCommand(IDC_CLOSE_TAB);
-        //        }
-        //        else
-        //        {
-        //            ExecuteCommand(IDC_CLOSE_TAB);
-        //        }
-        //    }
-        //}
 
         if (wParam == WM_MBUTTONUP)
         {
@@ -452,7 +525,7 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
             }
         }
     }
-next:
+    next:
     // DebugLog(L"CallNextHookEx %X", wParam);
     return CallNextHookEx(mouse_hook, nCode, wParam, lParam);
 }

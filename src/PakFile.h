@@ -67,7 +67,7 @@ bool CheckHeader(uint8_t *buffer, PAK_ENTRY *&pak_entry, PAK_ENTRY *&end_entry)
         end_entry = pak_entry + pak_header->resource_count;
     }
 
-    // 为了保存最后一条的"下一条"，这条特殊的条目的id一定为0
+    // 為了保存最後一條的"下一條"，這條特殊的條目的id一定為0
     if (!end_entry || end_entry->resource_id != 0)
         return false;
 
@@ -80,7 +80,7 @@ void PakFind(uint8_t *buffer, uint8_t *pos, Function f)
     PAK_ENTRY *pak_entry = NULL;
     PAK_ENTRY *end_entry = NULL;
 
-    // 检查文件头
+    // 檢查檔案頭
     if (!CheckHeader(buffer, pak_entry, end_entry))
         return;
 
@@ -103,7 +103,7 @@ void TraversalGZIPFile(uint8_t *buffer, Function f)
     PAK_ENTRY *pak_entry = NULL;
     PAK_ENTRY *end_entry = NULL;
 
-    // 检查文件头
+    // 檢查檔案頭
     if (!CheckHeader(buffer, pak_entry, end_entry))
         return;
 
@@ -114,7 +114,7 @@ void TraversalGZIPFile(uint8_t *buffer, Function f)
 
         if (old_size < 10 * 1024)
         {
-            // 小于10k文件跳过
+            // 小於10k檔案跳過
             pak_entry = next_entry;
             continue;
         }
@@ -123,7 +123,7 @@ void TraversalGZIPFile(uint8_t *buffer, Function f)
         size_t gzip_len = sizeof(gzip);
         if (memcmp(buffer + pak_entry->file_offset, gzip, gzip_len) != 0)
         {
-            // 不是gzip文件跳过
+            // 不是gzip檔案跳過
             pak_entry = next_entry;
             continue;
         }
@@ -143,7 +143,7 @@ void TraversalGZIPFile(uint8_t *buffer, Function f)
             bool changed = f(unpack_buffer, unpack_len, new_len);
             if (changed)
             {
-                // 如果有改变
+                // 如果有改變
                 size_t compress_size = 0;
                 uint8_t *compress_buffer = (uint8_t *)gzip_compress(unpack_buffer, new_len, &compress_size);
                 if (compress_buffer && compress_size < old_size)
@@ -152,7 +152,7 @@ void TraversalGZIPFile(uint8_t *buffer, Function f)
                     fwrite(compress_buffer, compress_size, 1, fp);
                     fclose(fp);*/
 
-                    // gzip头
+                    // gzip頭
                     memcpy(buffer + pak_entry->file_offset, compress_buffer, 10);
 
                     // extra

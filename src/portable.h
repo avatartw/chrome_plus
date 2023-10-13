@@ -29,9 +29,28 @@ std::wstring JoinArgsString(std::vector<std::wstring> lines, const std::wstring 
     return text;
 }
 
-bool IsExistsPortable()
+// 這段代碼應該可以廢棄了……
+//bool IsExistsPortable()
+//{
+//    std::wstring path = GetAppDir() + L"\\portable";
+//    if (PathFileExists(path.data()))
+//    {
+//        return true;
+//    }
+//    return false;
+//}
+
+//bool IsNeedPortable()
+//{
+//    return true;
+//    static bool need_portable = IsExistsPortable();
+//    return need_portable;
+//}
+
+// 嘗試讀取 ini 檔案
+bool IsIniExist()
 {
-    std::wstring path = GetAppDir() + L"\\portable";
+    std::wstring path = GetAppDir() + L"\\chrome++.ini";
     if (PathFileExists(path.data()))
     {
         return true;
@@ -39,33 +58,112 @@ bool IsExistsPortable()
     return false;
 }
 
-bool IsNeedPortable()
+// 如果 ini 存在，從中讀取 CommandLine；如果 ini 不存在，或者存在，但是 CommandLine 為空，則返回空字串
+std::wstring GetCrCommandLine()
 {
-    return true;
-    static bool need_portable = IsExistsPortable();
-    return need_portable;
+    if (IsIniExist())
+    {
+        std::wstring IniPath = GetAppDir() + L"\\chrome++.ini";
+        TCHAR CommandLineBuffer[MAX_PATH];
+        ::GetPrivateProfileStringW(L"General", L"CommandLine", L"", CommandLineBuffer, MAX_PATH, IniPath.c_str());
+        return std::wstring(CommandLineBuffer);
+    }
+    else
+    {
+        return std::wstring(L"");
+    }
 }
 
+// 如果 ini 存在，讀取 UserData 並配置，否則使用默認值
 std::wstring GetUserDataDir()
 {
-    std::wstring path = GetAppDir() + L"\\..\\Data";
+    if (IsIniExist())
+    {
+        std::wstring IniPath = GetAppDir() + L"\\chrome++.ini";
+        // 修改 Chrome 默認 Data 路徑
+        std::wstring path = GetAppDir() + L"\\..\\Data";
+        TCHAR temp[MAX_PATH];
+        ::PathCanonicalize(temp, path.data());
 
-    TCHAR temp[MAX_PATH];
-    ::PathCanonicalize(temp, path.data());
+        if (!PathFileExists(IniPath.c_str()))
+        {
+            return GetAppDir() + L"\\..\\Data";
+        }
 
-    return temp;
+        TCHAR UserDataBuffer[MAX_PATH];
+        ::GetPrivateProfileStringW(L"General", L"DataDir", temp, UserDataBuffer, MAX_PATH, IniPath.c_str());
+
+        // 若 ini 中 DataDir 留空，則按照默認情況處理
+        if (UserDataBuffer[0] == 0)
+        {
+            ::PathCanonicalize(UserDataBuffer, path.data());
+        }
+
+        std::wstring ExpandedPath = ExpandEnvironmentPath(UserDataBuffer);
+
+        // 替換 %app%
+        ReplaceStringIni(ExpandedPath, L"%app%", GetAppDir());
+        std::wstring DataDir;
+        DataDir = GetAbsolutePath(ExpandedPath);
+
+        wcscpy(UserDataBuffer, DataDir.c_str());
+
+        return std::wstring(UserDataBuffer);
+    }
+    else
+    {
+        std::wstring path = GetAppDir() + L"\\..\\Data";
+        TCHAR temp[MAX_PATH];
+        ::PathCanonicalize(temp, path.data());
+        return temp;
+    }
 }
+
+// 如果 ini 存在，讀取 DiskCache 並配置，否則使用默認值
 std::wstring GetDiskCacheDir()
 {
-    std::wstring path = GetAppDir() + L"\\..\\Cache";
+    if (IsIniExist())
+    {
+        std::wstring IniPath = GetAppDir() + L"\\chrome++.ini";
+        // 修改 Chrome 默認 Cache 路徑
+        std::wstring path = GetAppDir() + L"\\..\\Cache";
+        TCHAR temp[MAX_PATH];
+        ::PathCanonicalize(temp, path.data());
 
-    TCHAR temp[MAX_PATH];
-    ::PathCanonicalize(temp, path.data());
+        if (!PathFileExists(IniPath.c_str()))
+        {
+            return GetAppDir() + L"\\..\\Cache";
+        }
 
-    return temp;
+        TCHAR CacheDirBuffer[MAX_PATH];
+        ::GetPrivateProfileStringW(L"General", L"CacheDir", temp, CacheDirBuffer, MAX_PATH, IniPath.c_str());
+
+        // 若 ini 中 CacheDir 留空，則按照默認情況處理
+        if (CacheDirBuffer[0] == 0)
+        {
+            ::PathCanonicalize(CacheDirBuffer, path.data());
+        }
+
+        std::wstring ExpandedPath = ExpandEnvironmentPath(CacheDirBuffer);
+
+        // 替換 %app%
+        ReplaceStringIni(ExpandedPath, L"%app%", GetAppDir());
+        std::wstring CacheDir;
+        CacheDir = GetAbsolutePath(ExpandedPath);
+        wcscpy(CacheDirBuffer, CacheDir.c_str());
+
+        return std::wstring(CacheDirBuffer);
+    }
+    else
+    {
+        std::wstring path = GetAppDir() + L"\\..\\Cache";
+        TCHAR temp[MAX_PATH];
+        ::PathCanonicalize(temp, path.data());
+        return temp;
+    }
 }
 
-// 构造新命令行
+// 構造新命令行
 std::wstring GetCommand(LPWSTR param)
 {
     std::vector<std::wstring> args;
@@ -88,42 +186,44 @@ std::wstring GetCommand(LPWSTR param)
     }
     for (int i = 0; i < argc; i++)
     {
-        // 保留原来参数
+        // 保留原來參數
         if (i)
             args.push_back(argv[i]);
 
-        // 追加参数
+        // 追加參數
         if (i == insert_pos)
         {
-            args.push_back(L"--shuax");
+            args.push_back(L"--portable");
 
-            // args.push_back(L"--force-local-ntp");
-            // args.push_back(L"--disable-background-networking");
+            args.push_back(L"--disable-features=RendererCodeIntegrity,FlashDeprecationWarning");
 
-            //args.push_back(L"--disable-crash-reporter --disable-breakpad --no-report-upload --disable-logging");
-            //args.push_back(LR"(--blink-settings="dnsPrefetchingEnabled=false")");
-            //args.push_back(L"--realtime-reporting-url=0.0.0.0");
-            //args.push_back(L"--reporting-connector-url=0.0.0.0");
-            //args.push_back(L"--disable-features=RendererCodeIntegrity,FlashDeprecationWarning,CrashReporting,CrostiniAdditionalEnterpriseReporting,DocumentReporting,Reporting");
-            args.push_back(L"--disable-features=RendererCodeIntegrity");
-            //args.push_back(L"--enable-features=IntelVpSuperResolution,PlatformHEVCDecoderSupport,EnableTabMuting");
-            // args.push_back(L"--disable-machine-id");
-            // args.push_back(L"--disable-encryption-win");
+            // 獲取命令行，然後追加參數
+            {
+                auto cr_command_line = GetCrCommandLine();
 
-            // if (IsNeedPortable())
-            //{
-            //    auto diskcache = GetDiskCacheDir();
+                wchar_t temp[MAX_PATH];
+                wsprintf(temp, L"%s", cr_command_line.c_str());
+                args.push_back(temp);
+            }
 
-            //    wchar_t temp[MAX_PATH];
-            //    wsprintf(temp, L"--disk-cache-dir=%s", diskcache.c_str());
-            //    args.push_back(temp);
-            //}
             {
                 auto userdata = GetUserDataDir();
 
                 wchar_t temp[MAX_PATH];
                 wsprintf(temp, L"--user-data-dir=%s", userdata.c_str());
                 args.push_back(temp);
+            }
+            // if (IsNeedPortable())
+            {
+                auto diskcache = GetDiskCacheDir();
+                if (diskcache == userdata)
+		{}
+                else
+                {
+                    wchar_t temp[MAX_PATH];
+                    wsprintf(temp, L"--disk-cache-dir=%s", diskcache.c_str());
+                    args.push_back(temp);
+                }
             }
         }
     }

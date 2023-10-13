@@ -120,30 +120,16 @@ NET_API_STATUS WINAPI MyNetUserGetInfo(
     DWORD level,
     LPBYTE *bufptr)
 {
-    // DebugLog(L"MyNetUserGetInfo %s", username);
-
     NET_API_STATUS ret = RawNetUserGetInfo(servername, username, level, bufptr);
     if (level == 1 && ret == 0)
     {
         LPUSER_INFO_1 user_info = (LPUSER_INFO_1)*bufptr;
-        // DebugLog(L"user_info %d %s", user_info->usri1_password_age, user_info->usri1_name);
         user_info->usri1_password_age = 0;
-        // DebugLog(L"user_info %d", user_info->usri1_password_age);
-
-        // DebugLog(L"User account name: %s\n", user_info->usri1_name);
-        // DebugLog(L"Password: %s\n", user_info->usri1_password);
-        // DebugLog(L"Password age (seconds): %d\n", user_info->usri1_password_age);
-        // DebugLog(L"Privilege level: %d\n", user_info->usri1_priv);
-        // DebugLog(L"Home directory: %s\n", user_info->usri1_home_dir);
-        // DebugLog(L"User comment: %s\n", user_info->usri1_comment);
-        // DebugLog(L"Flags (in hex): %x\n", user_info->usri1_flags);
-        // DebugLog(L"Script path: %s\n", user_info->usri1_script_path);
     }
 
     return ret;
 }
 
-//According to the code provided by El Sanchez https://forum.ru-board.com/topic.cgi?forum=5&topic=51073&start=620&limit=1&m=1#1
 #define PROCESS_CREATION_MITIGATION_POLICY_BLOCK_NON_MICROSOFT_BINARIES_ALWAYS_ON (0x00000001ui64 << 44)
 
 typedef BOOL(WINAPI *pUpdateProcThreadAttribute)(
@@ -168,7 +154,6 @@ BOOL WINAPI MyUpdateProcThreadAttribute(
 {
     if (Attribute == PROC_THREAD_ATTRIBUTE_MITIGATION_POLICY && cbSize >= sizeof(DWORD64))
     {
-        // https://source.chromium.org/chromium/chromium/src/+/main:sandbox/win/src/process_mitigations.cc;l=362;drc=4c2fec5f6699ffeefd93137d2bf8c03504c6664c
         PDWORD64 policy_value_1 = &((PDWORD64)lpValue)[0];
         *policy_value_1 &= ~PROCESS_CREATION_MITIGATION_POLICY_BLOCK_NON_MICROSOFT_BINARIES_ALWAYS_ON;
     }
@@ -238,7 +223,6 @@ void MakeGreen()
         MH_STATUS status = MH_CreateHook(LogonUserW, MyLogonUserW, (LPVOID *)&RawLogonUserW);
         if (status == MH_OK)
         {
-            // DebugLog(L"MH_EnableHook LogonUserW");
             MH_EnableHook(LogonUserW);
         }
         else
@@ -255,7 +239,6 @@ void MakeGreen()
         MH_STATUS status = MH_CreateHook(IsOS, MyIsOS, (LPVOID *)&RawIsOS);
         if (status == MH_OK)
         {
-            // DebugLog(L"MH_EnableHook IsOS");
             MH_EnableHook(IsOS);
         }
         else
@@ -280,7 +263,6 @@ void MakeGreen()
         }
     }
 
-    //According to the code provided by El Sanchez https://forum.ru-board.com/topic.cgi?forum=5&topic=51073&start=620&limit=1&m=1#1
     LPVOID ppUpdateProcThreadAttribute = nullptr;
     MH_STATUS status = MH_CreateHookApiEx(L"kernel32", "UpdateProcThreadAttribute",
         &MyUpdateProcThreadAttribute, (LPVOID *)&RawUpdateProcThreadAttribute, &ppUpdateProcThreadAttribute);

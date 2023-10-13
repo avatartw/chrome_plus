@@ -22,7 +22,7 @@ HANDLE WINAPI MyMapViewOfFile(
 {
     if (hFileMappingObject == resources_pak_map)
     {
-        // 修改属性为可修改
+        // 修改屬性為可修改
         LPVOID buffer = RawMapViewOfFile(hFileMappingObject, FILE_MAP_COPY, dwFileOffsetHigh,
                                          dwFileOffsetLow, dwNumberOfBytesToMap);
 
@@ -32,7 +32,7 @@ HANDLE WINAPI MyMapViewOfFile(
 
         if (buffer)
         {
-            // 遍历gzip文件
+            // 遍歷gzip檔案
             TraversalGZIPFile((BYTE *)buffer, [=](uint8_t *begin, uint32_t size, uint32_t &new_len) {
                 bool changed = false;
 
@@ -41,7 +41,7 @@ HANDLE WINAPI MyMapViewOfFile(
                 if (pos)
                 {
 
-                    // 压缩HTML以备写入补丁信息
+                    // 壓縮HTML以備寫入補丁訊息
                     std::string html((char *)begin, size);
                     compression_html(html);
 
@@ -52,15 +52,15 @@ HANDLE WINAPI MyMapViewOfFile(
                         ReplaceStringInPlace(html, R"(hidden="[[!shouldShowIcons_(showUpdateStatus_)]]")", R"(hidden="true")");
                     }
 
-                    const char prouct_title[] = u8R"({aboutBrowserVersion}</div><div class="secondary"><a target="_blank" href="https://github.com/shuax/chrome_plus">Chrome++</a> )" RELEASE_VER_STR u8R"( inside</div>)";
+                    const char prouct_title[] = u8R"({aboutBrowserVersion}</div><div class="secondary"><a target="_blank" href="https://github.com/Bush2021/chrome_plus">Chrome++</a> )" RELEASE_VER_STR u8R"( modified version</div>)";
                     ReplaceStringInPlace(html, R"({aboutBrowserVersion}</div>)", prouct_title);
 
                     if (html.length() <= size)
                     {
-                        // 写入修改
+                        // 寫入修改
                         memcpy(begin, html.c_str(), html.length());
 
-                        // 修改长度
+                        // 修改長度
                         new_len = html.length();
                         changed = true;
                     }
@@ -99,7 +99,7 @@ HANDLE WINAPI MyCreateFileMapping(
 {
     if (hFile == resources_pak_file)
     {
-        // 修改属性为可修改
+        // 修改屬性為可修改
         resources_pak_map = RawCreateFileMapping(hFile, lpAttributes, PAGE_WRITECOPY,
                                                  dwMaximumSizeHigh, dwMaximumSizeLow, lpName);
 

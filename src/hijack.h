@@ -21,12 +21,12 @@ namespace hijack
         __nop();            \
         return __COUNTER__; \
     }
-// 用 __COUNTER__ 来生成一点不一样的代码，避免被 VS 自动合并相同函数
+// 用 __COUNTER__ 來生成一點不一樣的代碼，避免被 VS 自動合併相同函數
 
 #define EXPORT(api) int __cdecl api() NOP_FUNC
 
-#pragma region 声明导出函数
-// 声明导出函数
+#pragma region 宣告匯出函數
+// 宣告匯出函數
 #pragma comment(linker, "/export:GetFileVersionInfoA=?GetFileVersionInfoA@hijack@@YAHXZ,@1")
 #pragma comment(linker, "/export:GetFileVersionInfoByHandle=?GetFileVersionInfoByHandle@hijack@@YAHXZ,@2")
 #pragma comment(linker, "/export:GetFileVersionInfoExA=?GetFileVersionInfoExA@hijack@@YAHXZ,@3")
@@ -65,7 +65,7 @@ EXPORT(VerQueryValueW)
 } // namespace hijack
 #pragma endregion
 
-#pragma region 还原导出函数
+#pragma region 還原匯出函數
 bool WriteMemory(PBYTE BaseAddress, PBYTE Buffer, DWORD nSize)
 {
     DWORD ProtectFlag = 0;
@@ -79,7 +79,7 @@ bool WriteMemory(PBYTE BaseAddress, PBYTE Buffer, DWORD nSize)
     return false;
 }
 
-// 还原导出函数
+// 還原匯出函數
 void InstallJMP(PBYTE BaseAddress, uintptr_t Function)
 {
     if (*BaseAddress == 0xE9)
@@ -109,7 +109,7 @@ void InstallJMP(PBYTE BaseAddress, uintptr_t Function)
 }
 #pragma endregion
 
-#pragma region 加载系统dll
+#pragma region 載入系統dll
 void LoadVersion(HINSTANCE hModule)
 {
     PBYTE pImageBase = (PBYTE)hModule;

@@ -26,19 +26,19 @@ void ChromePlus()
     // 快捷方式
     SetAppId();
 
-    // 便携化补丁
+    // 便攜化補丁
     MakeGreen();
 
-    // 标签页，书签，地址栏增强
+    // 標籤頁，書籤，地址欄增強
     TabBookmark();
 
-    // 给pak文件打补丁
+    // 給pak檔案打補丁
     PakPatch();
 }
 
 void ChromePlusCommand(LPWSTR param)
 {
-    if (!wcsstr(param, L"--shuax"))
+    if (!wcsstr(param, L"--portable"))
     {
         Portable(param);
     }
@@ -50,10 +50,10 @@ void ChromePlusCommand(LPWSTR param)
 
 int Loader()
 {
-    // 硬补丁
+    // 硬補丁
     MakePatch();
 
-    // 只关注主界面
+    // 只關注主介面
     LPWSTR param = GetCommandLineW();
     // DebugLog(L"param %s", param);
     if (!wcsstr(param, L"-type="))
@@ -67,12 +67,12 @@ int Loader()
 
 void InstallLoader()
 {
-    //获取程序入口点
+    //獲取程序入口點
     MODULEINFO mi;
     GetModuleInformation(GetCurrentProcess(), GetModuleHandle(NULL), &mi, sizeof(MODULEINFO));
     PBYTE entry = (PBYTE)mi.EntryPoint;
 
-    // 入口点跳转到Loader
+    // 入口點跳轉到Loader
     MH_STATUS status = MH_CreateHook(entry, Loader, (LPVOID *)&ExeMain);
     if (status == MH_OK)
     {
@@ -86,7 +86,7 @@ void InstallLoader()
 #define EXTERNC extern "C"
 
 //
-EXTERNC __declspec(dllexport) void shuax()
+EXTERNC __declspec(dllexport) void portable()
 {
 }
 
@@ -97,10 +97,10 @@ EXTERNC BOOL WINAPI DllMain(HINSTANCE hModule, DWORD dwReason, LPVOID pv)
         DisableThreadLibraryCalls(hModule);
         hInstance = hModule;
 
-        // 保持系统dll原有功能
+        // 保持系統dll原有功能
         LoadSysDll(hModule);
 
-        // 初始化HOOK库成功以后安装加载器
+        // 初始化HOOK庫成功以後安裝載入器
         MH_STATUS status = MH_Initialize();
         if (status == MH_OK)
         {
