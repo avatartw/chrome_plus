@@ -271,24 +271,13 @@ bool IsOnOneTab(NodePtr top, POINT pt)
     return flag;
 }
 
-// 是否保留最後一個標籤，是則返回 IsOnlyOneTab 為 True，否則返回 False
-bool IsKeepLastTabFun()
-{
-        std::wstring IniPath = GetAppDir() + L"\\chrome++.ini";
-        if (::GetPrivateProfileIntW(L"Tabs", L"keep_last_tab", 1, IniPath.c_str()) == 0)
-        {
-            return false;
-        }
-
-        return true;
-}
-
 bool IsKeepLastTab = IsKeepLastTabFun();
 
 // 是否只有一個標籤
 bool IsOnlyOneTab(NodePtr top)
 {
-    if (!IsKeepLastTab) {
+    if (!IsKeepLastTab)
+    {
         return false;
     }
     else
@@ -326,31 +315,7 @@ bool IsOnlyOneTab(NodePtr top)
     }
 }
 
-// 是否開啟滑鼠停留在標籤欄時滾輪切換標籤
-bool IsWheelTabFun()
-{
-    std::wstring IniPath = GetAppDir() + L"\\chrome++.ini";
-    if (::GetPrivateProfileIntW(L"Tabs", L"wheel_tab", 1, IniPath.c_str()) == 0)
-    {
-        return false;
-    }
-
-    return true;
-}
-
 bool IsWheelTab = IsWheelTabFun();
-
-// 是否開啟在任何位置按住右鍵時滾輪切換標籤
-bool IsWheelTabWhenPressRButtonFun()
-{
-    std::wstring IniPath = GetAppDir() + L"\\chrome++.ini";
-    if (::GetPrivateProfileIntW(L"Tabs", L"wheel_tab_when_press_rbutton", 1, IniPath.c_str()) == 0)
-    {
-        return false;
-    }
-
-    return true;
-}
 
 bool IsWheelTabWhenPressRButton = IsWheelTabWhenPressRButtonFun();
 
@@ -373,18 +338,6 @@ bool IsOnTheTab(NodePtr top, POINT pt)
         // if (top) DebugLog(L"IsOnTheTab failed");
     }
     return flag;
-}
-
-// 是否執行雙擊關閉
-bool IsDblClkFun()
-{
-    std::wstring IniPath = GetAppDir() + L"\\chrome++.ini";
-    if (::GetPrivateProfileIntW(L"Tabs", L"double_click_close", 1, IniPath.c_str()) == 0)
-    {
-        return false;
-    }
-
-    return true;
 }
 
 bool IsDblClk = IsDblClkFun();
@@ -433,44 +386,55 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
         //     return 1;
         // }
 
-        if (wParam == WM_MOUSEWHEEL) {
+        if (wParam == WM_MOUSEWHEEL)
+        {
             HWND hwnd = WindowFromPoint(pmouse->pt);
             NodePtr TopContainerView = GetTopContainerView(hwnd);
 
-            PMOUSEHOOKSTRUCTEX pwheel = (PMOUSEHOOKSTRUCTEX) lParam;
+            PMOUSEHOOKSTRUCTEX pwheel = (PMOUSEHOOKSTRUCTEX)lParam;
             int zDelta = GET_WHEEL_DELTA_WPARAM(pwheel->mouseData);
 
             // 是否啟用滑鼠停留在標籤欄時滾輪切換標籤
-            if (IsWheelTab && IsOnTheTab(TopContainerView, pmouse->pt)) {
-                    hwnd = GetTopWnd(hwnd);
-                    if (zDelta > 0) {
-                        ExecuteCommand(IDC_SELECT_PREVIOUS_TAB, hwnd);
-                    } else {
-                        ExecuteCommand(IDC_SELECT_NEXT_TAB, hwnd);
-                    }
-
-                    wheel_tab_ing = true;
-                    if (TopContainerView) {
-                    }
-                    // DebugLog(L"WM_MOUSEWHEEL");
-                    return 1;
+            if (IsWheelTab && IsOnTheTab(TopContainerView, pmouse->pt))
+            {
+                hwnd = GetTopWnd(hwnd);
+                if (zDelta > 0)
+                {
+                    ExecuteCommand(IDC_SELECT_PREVIOUS_TAB, hwnd);
                 }
+                else
+                {
+                    ExecuteCommand(IDC_SELECT_NEXT_TAB, hwnd);
+                }
+
+                wheel_tab_ing = true;
+                if (TopContainerView)
+                {
+                }
+                // DebugLog(L"WM_MOUSEWHEEL");
+                return 1;
+            }
  
             // 是否啟用在任何位置按住右鍵時滾輪切換標籤
-            if (IsWheelTabWhenPressRButton && IsPressed(VK_RBUTTON)) {
-                    hwnd = GetTopWnd(hwnd);
-                    if (zDelta > 0) {
-                        ExecuteCommand(IDC_SELECT_PREVIOUS_TAB, hwnd);
-                    } else {
-                        ExecuteCommand(IDC_SELECT_NEXT_TAB, hwnd);
-                    }
-
-                    wheel_tab_ing = true;
-                    if (TopContainerView) {
-                    }
-                    // DebugLog(L"WM_MOUSEWHEEL");
-                    return 1;
+            if (IsWheelTabWhenPressRButton && IsPressed(VK_RBUTTON))
+            {
+                hwnd = GetTopWnd(hwnd);
+                if (zDelta > 0)
+                {
+                    ExecuteCommand(IDC_SELECT_PREVIOUS_TAB, hwnd);
                 }
+                else
+                {
+                    ExecuteCommand(IDC_SELECT_NEXT_TAB, hwnd);
+                }
+
+                wheel_tab_ing = true;
+                if (TopContainerView)
+                {
+                }
+                // DebugLog(L"WM_MOUSEWHEEL");
+                return 1;
+            }
         }
 
         if (IsDblClk && wParam == WM_LBUTTONDBLCLK)
@@ -525,7 +489,7 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
             }
         }
     }
-    next:
+next:
     // DebugLog(L"CallNextHookEx %X", wParam);
     return CallNextHookEx(mouse_hook, nCode, wParam, lParam);
 }
