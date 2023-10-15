@@ -141,7 +141,7 @@ typedef BOOL(WINAPI *pUpdateProcThreadAttribute)(
     PVOID lpPreviousValue,
     PSIZE_T lpReturnSize);
 
-pUpdateProcThreadAttribute RawUpdateProcThreadAttribute = NULL;
+pUpdateProcThreadAttribute RawUpdateProcThreadAttribute = nullptr;
 
 BOOL WINAPI MyUpdateProcThreadAttribute(
     __inout LPPROC_THREAD_ATTRIBUTE_LIST lpAttributeList,
